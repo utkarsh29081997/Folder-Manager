@@ -11,19 +11,22 @@ import os
 import docx
 from docx.shared import Cm
 from docx import Document
+import Utility_Launch
+import datetime
+from Logging_files import defect_info
 
 
 class defect_file(Toplevel):
     def __init__(self):
         Toplevel.__init__(self)
-        self.geometry("550x820+700+120")
+        self.geometry("550x920+700+90")
         self.title("Defect Details !")
         self.resizable(False, False)
         # Top hold i and Name Label
         self.top_defect_frame = Frame(self, height=120, bg='white').pack(fill='both')
         try:
-            self.top_defect_image = PhotoImage(file='Image_01/defect.png')
-            self.label_defect_photo = ttk.Label(self, image=self.top_defect_image,background="white")
+            self.top_defect_image = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/defect.png'))
+            self.label_defect_photo = ttk.Label(self, image=self.top_defect_image, background="white")
             self.label_defect_photo.place(x=30, y=30)
         except:
             pass
@@ -33,46 +36,51 @@ class defect_file(Toplevel):
                                        , background="white").place(x=200, y=80)
 
         # Bottom frame to hold buttons and entry texts
-        self.btm_defect_frame = Frame(self, height=700, bg='#50946a').pack(fill='both')
+        self.btm_defect_frame = Frame(self, height=900, bg='#50946a').pack(fill='both')
         self.defect_label2 = ttk.Label(self, text="Defect Details", font=("Times New Roman", 16)
                                        , background="#50946a").place(x=190, y=140)
         self.defect_label3 = ttk.Label(self, text="Enter G-ID : ", font=("Times New Roman", 12)
                                        , background="#50946a").place(x=10, y=180)
         self.id_entry = ttk.Entry(self, width=15)
-        self.id_entry.insert(0, "G-")
+        self.id_entry.insert(0, "G")
         self.id_entry.place(x=180, y=180)
         self.id_entry.focus_force()
+
+        self.defect_timestamp = ttk.Label(self, text="Enter Time in CET", font=("Times New Roman", 12)
+                                          , background="#50946a").place(x=10, y=220)
+        self.defect_timestamp_entry = ttk.Entry(self, width=15)
+        self.defect_timestamp_entry.place(x=180, y=220)
         self.defect_label3 = ttk.Label(self, text="Enter App. Name : ", font=("Times New Roman", 12)
-                                       , background="#50946a").place(x=10, y=220)
+                                       , background="#50946a").place(x=10, y=260)
         self.app_name_entry = ttk.Entry(self, width=30)
-        self.app_name_entry.place(x=180, y=220)
+        self.app_name_entry.place(x=180, y=260)
 
         self.defect_label4 = ttk.Label(self, text="Enter Actual : ", font=("Times New Roman", 12)
-                                       , background="#50946a").place(x=10, y=280)
+                                       , background="#50946a").place(x=10, y=320)
         self.actual_result = Text(self, height=8, width=23, padx=5, pady=4, relief=RAISED, border=4,
                                   wrap=WORD)
-        self.actual_result.place(x=180, y=280)
+        self.actual_result.place(x=180, y=320)
 
         self.defect_label5 = ttk.Label(self, text="Enter Expected : ", font=("Times New Roman", 12)
-                                       , background="#50946a").place(x=10, y=470)
+                                       , background="#50946a").place(x=10, y=510)
         self.expected_result = Text(self, height=8, width=23, padx=5, pady=4, relief=RAISED, border=4,
                                     wrap=WORD)
-        self.expected_result.place(x=180, y=470)
+        self.expected_result.place(x=180, y=510)
 
         self.defect_label6 = ttk.Label(self, text="Enter File Type : ", font=("Times New Roman", 12)
-                                       , background="#50946a").place(x=10, y=660)
+                                       , background="#50946a").place(x=10, y=700)
         self.file_name_entry = ttk.Entry(self, width=30)
-        self.file_name_entry.place(x=180, y=660)
+        self.file_name_entry.place(x=180, y=700)
 
         self.defect_label7 = ttk.Label(self, text="Enter File Number : ", font=("Times New Roman", 12)
-                                       , background="#50946a").place(x=10, y=720)
+                                       , background="#50946a").place(x=10, y=760)
         self.file_number_entry = ttk.Entry(self, width=15)
-        self.file_number_entry.place(x=180, y=720)
+        self.file_number_entry.place(x=180, y=760)
 
         self.defect_raise = ttk.Button(self, width=14, text='DONE', command=self.write_in_defect_file)
-        self.defect_raise.place(x=120, y=780)
+        self.defect_raise.place(x=120, y=820)
         self.close_defect_raise = ttk.Button(self, width=15, text='    Close    ', command=self.close_wndw)
-        self.close_defect_raise.place(x=255, y=780)
+        self.close_defect_raise.place(x=255, y=820)
 
     def close_wndw(self):
         self.destroy()
@@ -80,19 +88,26 @@ class defect_file(Toplevel):
     def defect_template(self):
 
         doc_tem = Document()
-        print(os.getcwd())
         doc_para0 = doc_tem.add_paragraph()
         doc_para0.add_run("Execution Info ").bold = True
 
         # Table for holding User Id and App name
-        info_table = doc_tem.add_table(rows=2, cols=2)
+        info_table = doc_tem.add_table(rows=3, cols=2)
         info_table.style = "Table Grid"
         frst_cell = info_table.rows[0].cells
         frst_cell[0].text = 'User Id'
         frst_cell[1].text = self.id_entry.get()
+
         scnd_cell = info_table.rows[1].cells
-        scnd_cell[0].text = 'Application Name'
-        scnd_cell[1].text = self.app_name_entry.get()
+        scnd_cell[0].text = 'Time Stamp'
+        current = str(datetime.datetime.now())
+        date, times = current.split()
+        time_stamp = date + " " + self.defect_timestamp_entry.get()
+        scnd_cell[1].text = time_stamp
+
+        third_cell = info_table.rows[2].cells
+        third_cell[0].text = 'Application Name'
+        third_cell[1].text = self.app_name_entry.get()
 
         # Actual and Expected Section
         doc_para = doc_tem.add_paragraph()
@@ -116,13 +131,19 @@ class defect_file(Toplevel):
 
         doc_tem.save("Defect Template.docx")
         messagebox.showinfo("!nfo", "Your file is saved with name Defect Template")
+
+        defect_info()
         self.close_wndw()
 
     def write_in_defect_file(self):
         old_dir_defect = os.getcwd()
         list_of_images = os.listdir()
-        current_dir = old_dir_defect.rstrip("/Images")
+        current_dir = old_dir_defect.rstrip("\\Hands-on/Images")
         os.chdir(current_dir)
+        try:
+            os.mkdir("Defect")
+        except: pass
+        os.chdir(os.path.join(current_dir,"Defect"))
         img_listt = list()
         doc = docx.Document()
         for x in list_of_images:
@@ -139,7 +160,6 @@ class defect_file(Toplevel):
             doc.add_picture(last_pic, width=Cm(20))
             name = current_dir.split()
             *_, doc_name = name
-            doc_name = doc_name.rstrip(r"\\")
             doc.save("BUG_FILE_" + doc_name + ".docx")
             messagebox.showinfo("Done!", "Your file is saved with name BUG_FILE_{}".format(doc_name))
             self.defect_template()
