@@ -13,11 +13,7 @@ def create_folder():
     # If folder is not there create it
     if "Screenshot" not in list_of_files:
         os.mkdir("Screenshot")
-        os.chdir("C:/Users/user/Desktop/Screenshot")
-        print("Made")
-
+        os.chdir(os.path.join(os.getcwd(),"Screenshot"))
     # If folder is already there the ask user to enter application name
     elif "Screenshot" in list_of_files:
-        os.chdir("C:/Users/user/Desktop/Screenshot")
-        print(os.getcwd())
-        print("Exist from Create Folder")
+        os.chdir(os.path.join(os.getcwd(),"Screenshot"))
