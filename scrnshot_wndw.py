@@ -8,20 +8,22 @@ import os
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+from PIL import ImageGrab
+import time
+import Utility_Launch
 
-import pyscreenshot
 from docx import Document
 from docx.shared import Cm
+from defect_file_crtn import defect_file
+from Logging_files import log_in_excel
 
 
 def get_file_dir():
     current_dir = os.getcwd()
     list_first = list()
-    print(os.getcwd())
     list_first = current_dir.split("/")
     if "Images" not in list_first:
-        os.chdir(os.path.join(os.getcwd(), 'Images'))
-    print(os.getcwd(), "In fil_dir")
+        os.chdir(os.path.join(os.getcwd(), 'Hands-on/Images'))
 
 
 # The main part of the story is here there are two functions created outside the class as if created inside the class
@@ -33,21 +35,23 @@ class scrnshot(Toplevel):
     def __init__(self):
         Toplevel.__init__(self)
         get_file_dir()
-        print(os.getcwd(), "Here in screen shot")
         self.geometry("350x350+120+120")
         self.title("Take Screenshot")
         self.resizable(False, False)
 
         # Top frame to hold image and Name
-        self.top_scrnshot = Frame(self, height=120, bg="white")
-        self.top_scrnshot.pack(fill="both")
-        self.image_on_scrnshot = PhotoImage(file='S:/Projects/Python Projects/Utility/Image_01/smartphone.png')
-        self.label_top_heading = ttk.Label(self.top_scrnshot, text="Snap It.", font=("Times New Roman", 15)
+        self.frame_on_scrnshot = Frame(self, height=120, bg="white")
+        self.frame_on_scrnshot.pack(fill="both")
+        try:
+            self.image_on_scrnshot = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/sp.png'))
+            self.label_photo = ttk.Label(self.frame_on_scrnshot, image=self.image_on_scrnshot,
+                                         background="white").place(x=50, y=30)
+        except:
+            pass
+        self.label_top_heading = ttk.Label(self.frame_on_scrnshot, text="Snap It.", font=("Times New Roman", 15)
                                            , background="white").place(x=190, y=40)
-        self.label_heading = ttk.Label(self.top_scrnshot, text="Save It!!!", font=("Times New Roman", 10)
-                                       , background="white").place(x=190, y=80)
-        self.label_photo = ttk.Label(self.top_scrnshot, image=self.image_on_scrnshot, background="white")
-        self.label_photo.place(x=50, y=30)
+        self.label_heading_ss = ttk.Label(self.frame_on_scrnshot, text="Save It!!!", font=("Times New Roman", 10)
+                                          , background="white").place(x=190, y=80)
 
         # Bottom frame to hold buttons
         self.frame = Frame(self, height=300, bg='#c99a0c').pack(fill='both')
@@ -58,7 +62,8 @@ class scrnshot(Toplevel):
 
     def save_img(self):
         self.withdraw()
-        image = pyscreenshot.grab()
+        time.sleep(2)
+        image = ImageGrab.grab()
         current = str(datetime.datetime.now())
         date, times = current.split()
         hour, minutes, seconds = times.split(":")
@@ -75,26 +80,30 @@ class scrnshot(Toplevel):
         list_of_files_images = os.listdir()
         current_dir = old_dir.rstrip("/Images")
         os.chdir(current_dir)
-        print(os.getcwd())
         listt = list()
         doc = Document()
         for x in list_of_files_images:
             y = os.path.join(old_dir, x)
             listt.append(y)
-            print(listt)
-        for x in listt:
-            doc.add_picture(x, width=Cm(10))
-        name = current_dir.split()
-        print(name)
-        *_, doc_name = name
-        doc_name = doc_name.rstrip(r"\\")
-        print(doc_name, "DOC Name")
-        doc.save(doc_name + ".docx")
-        print("In read mode")
-        messagebox.showinfo("Done!", "Your folder is saved with name {}".format(doc_name))
-        self.close_wndw()
+        if len(listt) != 0:
+            for x in listt:
+                doc.add_picture(x, width=Cm(10))
+            name = current_dir.split()
+            *_, doc_name = name
+            doc_name = doc_name.rstrip(r"\\Hands-on")
+            doc.save(doc_name + ".docx")
+            messagebox.showinfo("Done!", "Your file is saved with name {}".format(doc_name))
+            log_in_excel(os.getcwd(), None, None, None)
+            self.close_wndw()
+
+        else:
+            messagebox.showerror("Error!", "Nothing to save")
+            self.close_wndw()
 
     def defect_or_not(self):
         user_res = messagebox.askquestion("Info!!", "Was it a defect")
         if user_res == 'no':
             self.write_in_file()
+        elif user_res == 'yes':
+            self.close_wndw()
+            defect_file()
