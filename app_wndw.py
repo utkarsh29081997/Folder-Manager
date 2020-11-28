@@ -6,7 +6,8 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-
+from Utility_Launch import path
+import os
 import CreateSubFolder
 from CheckDirectory import check_directory
 
@@ -20,12 +21,14 @@ class app_window(Toplevel):
         self.title("Application Name")
         self.resizable(False, False)
 
-        #  Top Frame to hold Image and Label name
+        #  Top Frame to hold i and Label name
         self.top_frame = Frame(self, height=120, bg="white")
         self.top_frame.pack(fill="both")
-        self.image_on_app = PhotoImage(file='S:/Projects/Python Projects/Utility/Images/folder.png')
-        self.label_photo = ttk.Label(self.top_frame, image=self.image_on_app, background="white")
-        self.label_photo.place(x=50, y=30)
+        try:
+            self.image_on_app = PhotoImage(file=os.path.join(path,'Images/folder.png'))
+            self.label_photo = ttk.Label(self.top_frame, image=self.image_on_app, background="white").place(x=50, y=30)
+        except:
+            pass
         self.label_heading = ttk.Label(self.top_frame, text="Application", font=("Times New Roman", 15),
                                        background="white")
         self.label_heading.place(x=190, y=40)
@@ -37,21 +40,25 @@ class app_window(Toplevel):
         self.entry_name = ttk.Entry(self, width=30)
         self.entry_name.place(x=60, y=215)
         self.entry_name.focus_force()
-        self.create_btn = ttk.Button(self, width=14, text='Create', command=self.create_sub_folder)
+        self.create_btn = ttk.Button(self, width=14, text='Create', command=lambda:self.create_sub_folder(None))
+        self.create_btn.bind("<Return>",self.create_sub_folder)
         self.create_btn.place(x=60, y=250)
-        self.quit_app = ttk.Button(self, width=15, text='Close', command=self.close_wndw)
+        self.quit_app = ttk.Button(self, width=15, text='Close', command=lambda:self.close_wndw(None))
+        self.quit_app.bind("<Return>",self.close_wndw)
         self.quit_app.place(x=185, y=250)
 
-    def close_wndw(self):
+    def close_wndw(self,event):
         self.destroy()
 
-    def create_sub_folder(self):
+    def create_sub_folder(self,event):
         application_name = self.entry_name.get()
+        print(os.getcwd())
         if application_name != '':
             check_directory()
+            print(os.getcwd(),"Second")
             CreateSubFolder.create_sub_folder(application_name)
-            self.close_wndw()
+            self.close_wndw(None)
         else:
             messagebox.showerror("Error!", "Please Enter Application name", icon="error")
-            self.close_wndw()
+            self.close_wndw(None)
             return app_window()
