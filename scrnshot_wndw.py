@@ -8,7 +8,7 @@ import os
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from PIL import ImageGrab
+from PIL import ImageGrab, Image
 import time
 import Utility_Launch
 
@@ -55,22 +55,56 @@ class scrnshot(Toplevel):
 
         # Bottom frame to hold buttons
         self.frame = Frame(self, height=300, bg='#c99a0c').pack(fill='both')
-        self.take_scrn = ttk.Button(self, text='    Take ScreenShot    ', command=self.save_img)
+        self.take_scrn = ttk.Button(self, text='    Take ScreenShot    ', command=lambda:self.save_img(None))
+        self.take_scrn.bind("<Return>",self.save_img)
         self.take_scrn.place(x=60, y=150)
-        self.save_to_wrd = ttk.Button(self, width=15, text='    Save To word   ', command=self.defect_or_not)
+        self.save_to_wrd = ttk.Button(self,width=15, text='    Save To word   ',command=lambda:self.defect_or_not(None))
+        self.save_to_wrd.bind("<Return>",self.defect_or_not)
         self.save_to_wrd.place(x=60, y=210)
 
-    def save_img(self):
-        self.withdraw()
-        time.sleep(2)
-        image = ImageGrab.grab()
-        current = str(datetime.datetime.now())
-        date, times = current.split()
-        hour, minutes, seconds = times.split(":")
-        file = hour + "_" + minutes + "_" + seconds
-        image.save(file + ".png")
-        self.update()
-        self.deiconify()
+    def save_img(self,event):
+        try:
+            self.withdraw()
+            time.sleep(2)
+            image = ImageGrab.grab()
+            # current = str(datetime.datetime.now())
+            # date, times = current.split()
+            # hour, minutes, seconds = times.split(":")
+            # file = hour + "_" + minutes + "_" + seconds
+            # file_name = file + ".png"
+            print("Before",os.getcwd())
+            list_of_img = os.listdir()
+            if len(list_of_img) != 0:
+                f = list_of_img[-1]
+                if f.endswith('.png'):
+                    i = Image.open(f)
+                    name, ext = os.path.splitext(f)
+                    c_name = name.split()
+                    nmbr = c_name[-1]
+                    nmbr = int(nmbr) + 1
+                    nmbr = str(nmbr).zfill(4)
+                    file_name = 'Screenshot ' + nmbr + ext
+                    image.save(file_name)
+                else:
+                    messagebox.showwarning("Warning!!", "Please remove the file which is not in .png format or rename "
+                                                        "it so that it does not appear in the end")
+            else:
+                image.save('Screenshot 0000.png')
+
+            # self.rename_img(file_name)
+            self.update()
+            self.deiconify()
+        except:
+            self.close_wndw()
+
+    # def rename_img(self,file):
+    #     list_of_img = os.listdir()
+    #     print(list_of_img)
+    #     for z, f in enumerate(list_of_img):
+    #         if f.endswith('.png'):
+    #             i = Image.open(f)
+    #             name, ext = os.path.splitext(f)
+    #             i.save('Screenshot' + str(z) + ext)
 
     def close_wndw(self):
         self.destroy()
@@ -93,14 +127,14 @@ class scrnshot(Toplevel):
             doc_name = doc_name.rstrip(r"\\Hands-on")
             doc.save(doc_name + ".docx")
             messagebox.showinfo("Done!", "Your file is saved with name {}".format(doc_name))
-            log_in_excel(os.getcwd(), None, None, None)
+            log_in_excel(os.getcwd(), ' ', ' ', ' ')
             self.close_wndw()
 
         else:
             messagebox.showerror("Error!", "Nothing to save")
             self.close_wndw()
 
-    def defect_or_not(self):
+    def defect_or_not(self,event):
         user_res = messagebox.askquestion("Info!!", "Was it a defect")
         if user_res == 'no':
             self.write_in_file()
