@@ -1,4 +1,4 @@
-################################################################
+###############################################################
 # Author : Utkarsh Singh
 # Project : Daily Utility
 # Module : Window to Enter Test Case Name
@@ -6,8 +6,9 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-
 from test_case_track import track_test
+import Utility_Launch
+import os
 
 
 # The Third window where we need to Enter the Folder name of the application what I have done here is binded the button
@@ -19,15 +20,17 @@ class name_of_testcase(Toplevel):
         self.title("Test Case")
         self.resizable(False, False)
 
-        #  Top Frame to hold Image and Label name
-        self.top_test = Frame(self, height=120, bg="white")
-        self.top_test.pack(fill="both")
-        self.image_on_test = PhotoImage(file='S:/Projects/Python Projects/Utility/Image/test.png')
-        self.label_top_heading = ttk.Label(self.top_test, text="Test Case", font=("Times New Roman", 15)
-                                           , background="white")
-        self.label_photo = ttk.Label(self.top_test, image=self.image_on_test, background="white")
-        self.label_photo.place(x=50, y=30)
-        self.label_top_heading.place(x=190, y=40)
+        #  Top Frame to hold i and Label name
+        self.frame_test = Frame(self, height=120, bg="white")
+        self.frame_test.pack(fill="both")
+        try:
+            self.test_scren = PhotoImage(file=os.path.join(Utility_Launch.path, 'Images/test.png'))
+            self.test_photo = ttk.Label(self.frame_test, image=self.test_scren, background="white").place(x=50, y=30)
+        except:
+            pass
+        self.heading = ttk.Label(self.frame_test, text="Test Case!!", font=("Times New Roman", 15),
+                                 background="white")
+        self.heading.place(x=190, y=40)
 
         # Bottom Frame to hold Test Case entry input and buttons
         self.frame = Frame(self, height=500, bg='#c99a0c').pack(fill='both')
@@ -36,19 +39,25 @@ class name_of_testcase(Toplevel):
         self.enter_test_name = ttk.Entry(self, width=30)
         self.enter_test_name.place(x=60, y=215)
         self.enter_test_name.focus_force()
-        self.create_btn = ttk.Button(self, width=14, text='      OK      ', command=self.create_test_name)
+        self.create_btn = ttk.Button(self, width=14, text='      OK      ', command=lambda: self.create_test_name(None))
+        self.create_btn.bind("<Return>", self.create_test_name)
         self.create_btn.place(x=60, y=250)
-        self.quit_app = ttk.Button(self, width=15, text='    Close    ', command=self.close_wndw)
+        self.quit_app = ttk.Button(self, width=15, text='    Close    ', command=lambda: self.close_wndw(None))
+        self.quit_app.bind("<Return>", self.close_wndw)
         self.quit_app.place(x=185, y=250)
 
-    def close_wndw(self):
+    def close_wndw(self, event):
         self.destroy()
 
-    def create_test_name(self):
+    def create_test_name(self, event):
         test_name = self.enter_test_name.get()
-        if test_name != '':
-            track_test(test_name)
-            self.close_wndw()
-        else:
-            messagebox.showerror("Error!", "Please Enter Test Case name", icon="error")
-            return name_of_testcase()
+        curr_dir = os.getcwd().split("\\")
+        if 'Images' not in curr_dir:
+            if test_name != '':
+                track_test(test_name)
+                self.close_wndw(None)
+            else:
+                messagebox.showerror("Error!", "Please Enter Test Case name")
+                return name_of_testcase()
+        elif 'Images' in curr_dir:
+            messagebox.showerror("Not Allowed", "Please complete the previous Flow")
