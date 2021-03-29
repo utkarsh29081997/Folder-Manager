@@ -1,8 +1,14 @@
+########################################################################################################################
+# Author : Utkarsh Singh
+# Project : Daily Utility
+# Module : Excel Utility this is made to add a row or to change the cell value of the row of a particular column
+# Last Modified Date : 13 Dec,2020
+########################################################################################################################
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 from tkinter import *
 import os
-import Utility_Launch
+import MCPI
 import openpyxl
 
 
@@ -44,7 +50,7 @@ class excel_util(Toplevel):
         self.modify_Frame = LabelFrame(self.btmFrame, text="Modify a Cell", bg="#58a9b0")
         self.modify_Frame.place(x=5, y=110, height=180, width=700)
         # Image for successful window
-        self.success_image = PhotoImage(file=os.path.join(Utility_Launch.path, 'Images/details.png'))
+        self.success_image = PhotoImage(file=os.path.join(MCPI.path, 'Images/details.png'))
 
         # Modify Cell
         self.modify_cell_name_label = ttk.Label(self.modify_Frame, text="Column Number", font=("Times New Roman", 10)
@@ -59,39 +65,22 @@ class excel_util(Toplevel):
                                                  , background="#58a9b0").place(x=5, y=80)
         self.modify_cell_value_entry = ttk.Entry(self.modify_Frame, width=20)
 
+    # Open the excel file in tree-view over the same window and also only after opening the spreadsheet other options on
+    # window gets Visible
     def file_open(self):
+        self.treeview.delete(*self.treeview.get_children())  # Every time this line will refresh the table
         self.geometry("750x580+790+120")
         filename = filedialog.askopenfilename(
             initialdir=os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop/Screenshot/My Reports'),
             title='Open A File',
-            filetype=(("xslx files", "*.xlsx"), ("All Files", "*.*"))
+            filetype=(("xslx files", "*.xlsx"), ("xsl files", "*.xls"), ("All Files", "*.*"))
         )
-        self.treeview.delete(*self.treeview.get_children())
-        global df
-        if filename:
-            try:
-                filename = r"{}".format(filename)
-                df = pd.read_excel(filename)
-            except:
-                messagebox.showerror("Error", "File Cannot be open....Try Again", icon='error')
+        # Read File and Open it in tree-view
+        self.table_view(filename)
         try:
-            self.treeview.delete(*self.treeview.get_children())
-
-            self.treeview["column"] = list(df.columns)
-            self.treeview["show"] = "headings"
-
-            for column in self.treeview["column"]:
-                self.treeview.heading(column, text=column)
-
-            df_rows = df.to_numpy().tolist()
-            for rows in df_rows:
-                self.treeview.insert("", "end", values=rows)
-            self.treeview.configure(xscrollcommand=self.treescrollx.set,
-                                    yscrollcommand=self.treescrolly.set)
-            self.treescrolly.pack(side="right", fill="y")
-            self.treeview.pack()
-            self.treescrollx.pack(side="bottom", fill="x")  # make the scrollbar fill the x axis of the Treeview widget
             self.title("Excel Util {}".format(filename))
+
+            # Radio Buttons for Adding a defect or Pass Test Case
             option = StringVar()
             radio_success = Radiobutton(self.addFrame, text='Add Success Run', value='Success', variable=option,
                                         bg="#58a9b0", command=lambda: self.add_successrowinexcel(filename))
@@ -100,11 +89,10 @@ class excel_util(Toplevel):
                                      bg="#58a9b0", command=lambda: self.add_defectrowinexcel(filename))
             radio_fail.place(x=205, y=5)
 
-            # Packing Modiy options
+            # Packing Modify options
             self.modify_clmn_name_entry.place(x=150, y=5)
             self.modify_row_name_entry.place(x=150, y=40)
             self.modify_cell_value_entry.place(x=150, y=80)
-
             modify_btn = ttk.Button(self.modify_Frame, width=14, text="Change",
                                     command=lambda: self.modify_a_cell(filename, self.modify_row_name_entry.get(),
                                                                        self.modify_clmn_name_entry.get(),
@@ -112,25 +100,78 @@ class excel_util(Toplevel):
             modify_btn.place(x=50, y=110)
 
 
+
         except:
             pass
 
+    # Function to modify the cell
     def modify_a_cell(self, file, row, clmn, m_value):
         try:
-            file = file.split("/")
-            xlfile = file.pop()
-            file = '/'.join(file)
-            os.chdir(file)
-            wb = openpyxl.load_workbook(xlfile)
-            sheet = wb.active
-            row = int(row)
-            sheet.cell((row + 1), int(clmn)).value = m_value
-            wb.save(xlfile)
-            self.modify_row_name_entry.delete(0, END)
-            self.modify_clmn_name_entry.delete(0, END)
-            self.modify_cell_value_entry.delete(0, END)
-        except:
-            messagebox.showerror("Invalid Input", "Please Enter valid inputs")
+            if row and clmn and m_value != "":
+                filename = file
+                file = file.split("/")
+                xlfile = file.pop()
+                file = '/'.join(file)
+                os.chdir(file)
+                wb = openpyxl.load_workbook(xlfile)
+                sheet = wb.active
+                row = int(row)
+                sheet.cell((row + 1), int(clmn)).value = m_value
+                wb.save(xlfile)
+                self.table_view(filename)
+                self.modify_row_name_entry.delete(0, END)
+                self.modify_clmn_name_entry.delete(0, END)
+                self.modify_cell_value_entry.delete(0, END)
+            else:
+                messagebox.showerror("Missing Values", "Please enter values in the fields")
+        except Exception as e:
+            messagebox.showerror("Invalid Input", f"{e}\nYou could have missed this"
+                                                  "\n1.Enter Numeric Values for the column and row field"
+                                                  "\n2.May be the file is in open state close it and try again")
+
+    # Update tree-view
+    def table_view(self, filename):
+        # After the file gets saved present the changed data on the tree-view over the same window
+        self.treeview.delete(*self.treeview.get_children())
+        global df
+        if filename:
+            try:
+                filename = r"{}".format(filename)
+                df = pd.read_excel(filename)
+            except:
+                messagebox.showerror("Error", "File Cannot be open....Try Again", icon='error')
+        elif filename == '':
+            messagebox.showerror("Error", "Please Select a file", icon='error')
+            self.destroy()
+            excel_util()
+        try:
+            self.treeview.delete(*self.treeview.get_children())
+            self.treeview.tag_configure("oddrows", background="white")
+            self.treeview.tag_configure("evenrows", background="lightgreen")
+
+            self.treeview["column"] = list(df.columns)
+            self.treeview["show"] = "headings"
+
+            for column in self.treeview["column"]:
+                self.treeview.heading(column, text=column)
+
+            df_rows = df.to_numpy().tolist()
+
+            global count
+            count = 0
+            for rows in df_rows:
+                if count % 2 == 0:
+                    self.treeview.insert("", "end", values=rows, iid=count, tags=('oddrows',))
+                else:
+                    self.treeview.insert("", "end", values=rows, iid=count, tags=('evenrows',))
+                count += 1
+            self.treeview.configure(xscrollcommand=self.treescrollx.set,
+                                    yscrollcommand=self.treescrolly.set)
+            self.treescrolly.pack(side="right", fill="y")
+            self.treeview.pack()
+            self.treescrollx.pack(side="bottom", fill="x")
+        except Exception as e:
+            pass
 
     # If user wants to add a successful run in the excel
     def add_successrowinexcel(self, file):
@@ -188,6 +229,7 @@ class excel_util(Toplevel):
             wb.save(xlfile)
             success_window.destroy()
             messagebox.showinfo("Done!", "Row Added open the file")
+            self.table_view(xlfile)
 
     def add_defectrowinexcel(self, file):
         file = file.split("/")
@@ -262,3 +304,4 @@ class excel_util(Toplevel):
             wb.save(xlfile)
             defect_window.destroy()
             messagebox.showinfo("Done!", "Row Added open the file")
+            self.table_view(xlfile)
