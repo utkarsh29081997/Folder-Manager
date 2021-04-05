@@ -38,11 +38,11 @@ def add_env():
 def create_sub_folder(application_name):
     add_env()
     print(os.getcwd(), "Create Sub folder")
-    # Take File Name from user
+    # Take File Name from user.
     print(application_name, "Application name")
-    # If folder is not there create it
+    # If folder is not there create it.
     list_of_files_in_folder = list()
-    # Get list of all folders from the directory
+    # Get list of all folders from the directory.
     folders_in_scrnshot = os.listdir()
     for x in folders_in_scrnshot:
         list_of_files_in_folder.append(x)
