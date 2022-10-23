@@ -6,30 +6,33 @@
 #          Also the logic of comparision and extract
 # Last Modified Date : 29 Dec,2020
 ###############################################################
+from tkinter.tix import *
 from tkinter import *
+from Image_Compare import compare_img_folder
+from PdfIndentationCheck import pdf_indent_check
 from tkinter import filedialog, messagebox, ttk
-import Utility_Launch
+
+import MCPI
 import os
 import fitz
 import difflib
 import datetime
-from Image_Compare import compare_img_folder
-from PdfIndentationCheck import pdf_indent_check
-from CommonTemplate import Comontemp
 
 
 class pdf_util_window(Toplevel):
     def __init__(self):
         Toplevel.__init__(self)
         self.geometry("450x450+720+120")
-        self.title("PDF Utility")
+        self.title("MCPI- PDF Utility")
         self.resizable(False, False)
+
         #  Top Frame to hold image and Label name
         self.pdficon_frame = Frame(self, height=120, bg="white")
         self.pdficon_frame.pack(fill="both")
         self.focus_force()
+        self.tip = Balloon()
         try:
-            self.pdfimage = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/PdfLogo.png'))
+            self.pdfimage = PhotoImage(file=os.path.join(MCPI.path, 'Image_01/PdfLogo.png'))
             self.pdfimage_icon = ttk.Label(self.pdficon_frame, image=self.pdfimage, background="white").place(x=50,
                                                                                                               y=30)
         except:
@@ -40,17 +43,32 @@ class pdf_util_window(Toplevel):
         self.pdfframe_bottom = Frame(self, height=500, bg='#9e211c')
         self.pdfframe_bottom.pack(fill='both')
 
-        self.pdf_util = ttk.Button(self.pdfframe_bottom, text='  Extract & Compare Text Content    ',
+        # Extract Text button
+        self.pdf_text = ttk.Button(self.pdfframe_bottom, text='  Extract & Compare Text Content    ',
                                    command=lambda: Common_template(0))
-        self.pdf_util.place(x=50, y=80)
+        self.btn_img1 = PhotoImage(file=os.path.join(MCPI.path, 'Images/text-editor.png'))
+        self.btn_lbl1 = ttk.Label(self.pdfframe_bottom, image=self.btn_img1, background='#9e211c').place(x=29, y=80)
+        self.pdf_text.place(x=90, y=80)
+        self.tip.bind_widget(self.pdf_text, balloonmsg="Extract Texts/Compare Texts of PDF")
+        self.tip.subwidget('label').forget()
 
-        self.pdf_util = ttk.Button(self.pdfframe_bottom, text=' Extract & Compare Image Content  ',
-                                   command=lambda: Common_template(1))
-        self.pdf_util.place(x=50, y=130)
+        # Extract Image button
+        self.pdf_img = ttk.Button(self.pdfframe_bottom, text=' Extract & Compare Image Content  ',
+                                  command=lambda: Common_template(1))
+        self.btn_img2 = PhotoImage(file=os.path.join(MCPI.path, 'Images/image-gallery.png'))
+        self.btn_lbl2 = ttk.Label(self.pdfframe_bottom, image=self.btn_img2, background='#9e211c').place(x=29, y=130)
+        self.pdf_img.place(x=90, y=130)
+        self.tip.bind_widget(self.pdf_img, balloonmsg="Extract Images/Compare Images of PDF")
+        self.tip.subwidget('label').forget()
 
-        self.pdf_util = ttk.Button(self.pdfframe_bottom, text=' Compare Indentations of PDF          ',
-                                   command=pdf_indent_check)
-        self.pdf_util.place(x=50, y=180)
+        # Compare Indentations
+        self.pdf_indent = ttk.Button(self.pdfframe_bottom, text=' Compare Indentations of PDF          ',
+                                     command=pdf_indent_check)
+        self.btn_img3 = PhotoImage(file=os.path.join(MCPI.path, 'Images/left-indentation.png'))
+        self.btn_lbl3 = ttk.Label(self.pdfframe_bottom, image=self.btn_img3, background='#9e211c').place(x=29, y=180)
+        self.pdf_indent.place(x=90, y=180)
+        self.tip.bind_widget(self.pdf_indent, balloonmsg="Compare your PDF")
+        self.tip.subwidget('label').forget()
 
 
 # Common template to hold Text and Image Extraction and Compare Window objects
@@ -74,7 +92,7 @@ class Common_template(Toplevel):
         self.focus_force()
         # Frame to hold top image
         try:
-            self.image_on_scrnshot = PhotoImage(file=os.path.join(Utility_Launch.path, imagefile))
+            self.image_on_scrnshot = PhotoImage(file=os.path.join(MCPI.path, imagefile))
             self.label_photo = ttk.Label(self.pdfimgicon_frame, image=self.image_on_scrnshot,
                                          background="white").place(x=50, y=30)
         except:
@@ -119,6 +137,7 @@ class Common_template(Toplevel):
         self.extract_txt = ttk.Button(self.tab1, text=f"Extract {list_options[x]}")
         self.extract_txt.place(x=350, y=190)
 
+    # Extract Text template
     def open_frstpdf_file(self, x):
         self.pdfname_tab1['state'] = NORMAL
         self.pdfname_tab1.delete(0, END)
@@ -180,6 +199,8 @@ class Common_template(Toplevel):
             elif self.pdfname_tab2.get() == "":
                 self.btn_cmpr['state'] = DISABLED
                 messagebox.showerror("Error", "Please Select Target File")
+                self.destroy()
+                Common_template(x)
         except Exception as e:
             messagebox.showerror("Error", "Something Went Wrong \n{}".format(e))
 
@@ -312,6 +333,7 @@ def extract_textfrom_pdf(filename):
                                              r"{}\Extracted Text\{}.txt".format(os.getcwd(), save_txt_filename))
     except Exception as e:
         messagebox.showerror("Error", "Something Went Wrong \n{}".format(e))
+
 
 # Extract Image from PDF Logic
 def extract_images(filename):

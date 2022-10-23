@@ -2,12 +2,13 @@
 # Author : Utkarsh Singh
 # Project : Daily Utility
 # Module : Window to Enter Test Case Name
+# Last Modified Date : 28 Dec,2020
 ###############################################################
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from test_case_track import track_test
-import Utility_Launch
+import MCPI
 import os
 
 
@@ -24,7 +25,7 @@ class name_of_testcase(Toplevel):
         self.frame_test = Frame(self, height=120, bg="white")
         self.frame_test.pack(fill="both")
         try:
-            self.test_scren = PhotoImage(file=os.path.join(Utility_Launch.path, 'Images/test.png'))
+            self.test_scren = PhotoImage(file=os.path.join(MCPI.path, 'Images/test.png'))
             self.test_photo = ttk.Label(self.frame_test, image=self.test_scren, background="white").place(x=50, y=30)
         except:
             pass
@@ -61,3 +62,4 @@ class name_of_testcase(Toplevel):
                 return name_of_testcase()
         elif 'Images' in curr_dir:
             messagebox.showerror("Not Allowed", "Please complete the previous Flow")
+            self.close_wndw(None)

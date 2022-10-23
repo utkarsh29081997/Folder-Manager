@@ -4,7 +4,7 @@
 # Module : Compare And Get difference of two images from two different folder stored in 'Compare' folder inside Image
 #          folder of the first Folder and also we can compare two individual files and storing with first file name with
 #          just appended as "Compare" and "data"
-# Last Modified Date : 20 Dec,2020
+# Last Modified Date : 07 Mar,2020
 ########################################################################################################################
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
@@ -12,7 +12,7 @@ import cv2
 import os
 import numpy as np
 from pathlib import Path
-import Utility_Launch
+import MCPI
 import datetime
 
 
@@ -32,7 +32,7 @@ class image_compare(Toplevel):
         self.first_frame = Frame(self, height=130, bg="white")
         self.first_frame.pack(fill='both')
         try:
-            self.image_on_imgcmpr = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/file.png'))
+            self.image_on_imgcmpr = PhotoImage(file=os.path.join(MCPI.path, 'Image_01/file.png'))
             self.label_photo = ttk.Label(self.first_frame, image=self.image_on_imgcmpr,
                                          background="white").place(x=50, y=30)
         except:
@@ -106,7 +106,6 @@ class image_compare(Toplevel):
                 # Second File Location
                 def scn_file():
                     self.scndfilename['state'] = NORMAL
-                    self.scndfilename.delete(0, END)
                     self.btn_cmpr['state'] = DISABLED
                     scndfilename = filedialog.askopenfilename(
                         initialdir=os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop/Screenshot'),
@@ -116,6 +115,9 @@ class image_compare(Toplevel):
                     if scndfilename:
                         self.scndfilename.insert(END, scndfilename)
                         self.scndfilename['state'] = DISABLED
+                        self.filename.insert(END, filename)     # Inserting Target File if Target file is left blank
+                        self.filename['state'] = DISABLED
+                        self.scndfilename.delete(0, END)
                         self.btn_cmpr['state'] = NORMAL
                         self.btn_cmpr.config(command=lambda: compare_img(filename, scndfilename))
                     elif self.scndfilename.get() == '':
@@ -128,6 +130,8 @@ class image_compare(Toplevel):
             elif self.filename.get() == '':
                 self.btn_cmpr['state'] = DISABLED
                 messagebox.showerror("Error", "Please Select Target File")
+                self.destroy()
+                img_c()
 
             def compare_img(filename, scndfilename):
                 self.filename['state'] = NORMAL
@@ -180,21 +184,25 @@ class image_compare(Toplevel):
                         )
                         self.scndfoldername.insert(END, scnd_folder)
                         if scnd_folder and self.scndfoldername.get != '':
+                            self.foldername.insert(END, first_fldr)  # Inserting Target Folder name if nothing's there
+                            self.foldername['state'] = DISABLED
                             self.btn_cmpr2['state'] = NORMAL
                             self.scndfoldername['state'] = DISABLED
                             self.btn_cmpr2.config(command=lambda: self.compare_img(first_fldr, scnd_folder))
-                        elif self.scndfoldername.get != '':
+                        elif self.scndfoldername.get == '' and self.foldername.get() == '':
                             self.btn_cmpr2['state'] = DISABLED
                             self.foldername['state'] = NORMAL
                             self.foldername.delete(0, END)
-                            messagebox.showerror("Error", "Please Select Source File")
+                            messagebox.showerror("Error", "Please Select Source Folder")
                     except:
                         messagebox.showerror("Folder Issue", "Something went Wrong")
 
                 self.btn_im2.config(command=scnd_fldr)
             elif self.foldername.get() == '':
                 self.btn_cmpr2['state'] = DISABLED
-                messagebox.showerror("Error", "Please Select Target File")
+                messagebox.showerror("Error", "Please Select Target Folder")
+                self.destroy()
+                img_c()
         except:
             messagebox.showerror("Folder Issue", "Something went Wrong")
             self.destroy()
@@ -244,19 +252,16 @@ def compare_img_folder(first_fldr, scnd_folder):
         path = Path(first_fldr)
         os.chdir(path)
         image_file = os.listdir()
-        image_file_pngjpg = list()
 
-        for x, z in enumerate(image_file):  # Sort out PNG and JPG files
-            if z.endswith('.png') or z.endswith('.JPG'):
-                image_file_pngjpg.append(z)
+        # Sort out PNG and JPG files
+        image_file_pngjpg = [z for z in image_file if z.endswith('.png') or z.endswith('.JPG')]
 
         path2 = Path(scnd_folder)
         os.chdir(path2)
         image_file1 = os.listdir()
-        image_file1_pngjpg = list()
-        for x, z in enumerate(image_file1):  # Sort out PNG and JPG files
-            if z.endswith('.png') or z.endswith('.JPG'):
-                image_file1_pngjpg.append(z)
+
+        # Sort out PNG and JPG files
+        image_file1_pngjpg = [z for z in image_file1 if z.endswith('.png') or z.endswith('.JPG')]
 
         last_file = image_file[-1]
         list_diff = list()

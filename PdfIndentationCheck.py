@@ -9,7 +9,7 @@ from tkinter import filedialog, messagebox, ttk
 import cv2
 import os
 import numpy as np
-import Utility_Launch
+import MCPI
 import datetime
 import fitz
 
@@ -30,7 +30,7 @@ class pdf_indentation(Toplevel):
         self.first_frame = Frame(self, height=130, bg="white")
         self.first_frame.pack(fill='both')
         try:
-            self.image_on_imgcmpr = PhotoImage(file=os.path.join(Utility_Launch.path, 'Images/pdf-1.png'))
+            self.image_on_imgcmpr = PhotoImage(file=os.path.join(MCPI.path, 'Images/pdf-1.png'))
             self.label_photo = ttk.Label(self.first_frame, image=self.image_on_imgcmpr,
                                          background="white").place(x=50, y=30)
         except:
@@ -100,6 +100,8 @@ class pdf_indentation(Toplevel):
             elif self.pdf_file_name.get() == '':
                 self.btn_cmpr['state'] = DISABLED
                 messagebox.showerror("Error", "Please Select Target File")
+                self.destroy()
+                pdf_indent_check()
 
             def compare_pdf_indent(filename, scndfilename):
                 check_indent_logic(filename, scndfilename)

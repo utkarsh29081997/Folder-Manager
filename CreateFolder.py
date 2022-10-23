@@ -8,8 +8,8 @@ def create_folder():
     list_of_files = list()
     folders_on_desk = os.listdir()
     for x in folders_on_desk:
-        file_name, file_extn = os.path.splitext(x)
-        list_of_files.append(file_name)
+        # file_name, file_extn = os.path.splitext(x)
+        list_of_files.append(x)
     # If folder is not there create it
     if "Screenshot" not in list_of_files:
         os.mkdir("Screenshot")

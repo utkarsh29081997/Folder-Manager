@@ -2,6 +2,7 @@
 # Author : Utkarsh Singh
 # Project : Daily Utility
 # Module : Window to take Defect Details and add it to word and make defect files
+# Last Modified Date : 28 Dec,2020
 #######################################################################################
 from tkinter import *
 from tkinter import Text
@@ -11,7 +12,7 @@ import os
 import docx
 from docx.shared import Cm
 from docx import Document
-import Utility_Launch
+import MCPI
 import datetime
 from Logging_files import defect_info
 
@@ -19,13 +20,13 @@ from Logging_files import defect_info
 class defect_file(Toplevel):
     def __init__(self):
         Toplevel.__init__(self)
-        self.geometry("550x920+700+90")
+        self.geometry("550x870+700+90")
         self.title("Defect Details !")
-        self.resizable(False, False)
+        self.resizable(False, True)
         # Top hold i and Name Label
         self.top_defect_frame = Frame(self, height=120, bg='white').pack(fill='both')
         try:
-            self.top_defect_image = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/defect.png'))
+            self.top_defect_image = PhotoImage(file=os.path.join(MCPI.path, 'Image_01/defect.png'))
             self.label_defect_photo = ttk.Label(self, image=self.top_defect_image, background="white")
             self.label_defect_photo.place(x=30, y=30)
         except:
@@ -77,12 +78,14 @@ class defect_file(Toplevel):
         self.file_number_entry = ttk.Entry(self, width=15)
         self.file_number_entry.place(x=180, y=760)
 
-        self.defect_raise = ttk.Button(self, width=14, text='DONE', command=self.write_in_defect_file)
+        self.defect_raise = ttk.Button(self, width=14, text='DONE', command=lambda:self.write_in_defect_file(None))
+        self.defect_raise.bind("<Return>",self.write_in_defect_file)
         self.defect_raise.place(x=120, y=820)
-        self.close_defect_raise = ttk.Button(self, width=15, text='    Close    ', command=self.close_wndw)
+        self.close_defect_raise = ttk.Button(self, width=15, text='    Close    ', command=lambda:self.close_wndw(None))
+        self.close_defect_raise.bind("<Return>",self.close_wndw)
         self.close_defect_raise.place(x=255, y=820)
 
-    def close_wndw(self):
+    def close_wndw(self,event):
         self.destroy()
 
     def defect_template(self):
@@ -106,7 +109,7 @@ class defect_file(Toplevel):
         scnd_cell[1].text = time_stamp
 
         third_cell = info_table.rows[2].cells
-        third_cell[0].text = 'Application Name'
+        third_cell[0].text = 'Access'
         third_cell[1].text = self.app_name_entry.get()
 
         # Actual and Expected Section
@@ -133,22 +136,25 @@ class defect_file(Toplevel):
         messagebox.showinfo("!nfo", "Your file is saved with name Defect Template")
 
         defect_info()
-        self.close_wndw()
+        self.close_wndw(None)
 
-    def write_in_defect_file(self):
+    def write_in_defect_file(self,event):
         old_dir_defect = os.getcwd()
         list_of_images = os.listdir()
-        current_dir = old_dir_defect.rstrip("\\Hands-on/Images")
+        current_dir = old_dir_defect.rstrip("/Images")  #\\Hands-on
         os.chdir(current_dir)
-        try:
-            os.mkdir("Defect")
-        except: pass
-        os.chdir(os.path.join(current_dir,"Defect"))
+        # try:
+        #     os.mkdir("Defect")
+        # except: pass
+        # os.chdir(os.path.join(current_dir,"Defect"))
         img_listt = list()
         doc = docx.Document()
         for x in list_of_images:
-            y = os.path.join(old_dir_defect, x)
-            img_listt.append(y)
+            if x.endswith('.png') or x.endswith('.JPG'):
+                y = os.path.join(old_dir_defect, x)
+                img_listt.append(y)
+            else:
+                continue
         # Get list of image to save while we pop out the last image to store it below error message in docx
         if len(img_listt) != 0:
             last_pic = img_listt.pop()
@@ -160,9 +166,10 @@ class defect_file(Toplevel):
             doc.add_picture(last_pic, width=Cm(20))
             name = current_dir.split()
             *_, doc_name = name
+            doc_name = doc_name.rstrip(r"\\")
             doc.save("BUG_FILE_" + doc_name + ".docx")
             messagebox.showinfo("Done!", "Your file is saved with name BUG_FILE_{}".format(doc_name))
             self.defect_template()
         else:
             messagebox.showerror("Error!", "No Screenshot available")
-            self.close_wndw()
+            self.close_wndw(None)

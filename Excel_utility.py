@@ -24,6 +24,9 @@ class excel_util(Toplevel):
         self.excel_frame = Frame(self, height=250)
         self.excel_frame.pack(fill='both')
 
+        style = ttk.Style()
+        style.configure("Treeview",background='#D3D3D3',foreground='black',rowheight=25, feildbackground="#D3D3D3")
+
         # Create a treeview
         self.treeview = ttk.Treeview(self.excel_frame)
         self.treescrolly = ttk.Scrollbar(self.excel_frame, orient="vertical",
@@ -147,7 +150,7 @@ class excel_util(Toplevel):
         try:
             self.treeview.delete(*self.treeview.get_children())
             self.treeview.tag_configure("oddrows", background="white")
-            self.treeview.tag_configure("evenrows", background="lightgreen")
+            self.treeview.tag_configure("evenrows", background="lightblue")
 
             self.treeview["column"] = list(df.columns)
             self.treeview["show"] = "headings"
@@ -171,6 +174,7 @@ class excel_util(Toplevel):
             self.treeview.pack()
             self.treescrollx.pack(side="bottom", fill="x")
         except Exception as e:
+            messagebox.showerror("Wait!!", e)
             pass
 
     # If user wants to add a successful run in the excel

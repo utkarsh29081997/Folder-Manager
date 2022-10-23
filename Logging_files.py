@@ -3,8 +3,8 @@
 # Project : Daily Utility
 # Module : Program to log in Excel sheet whether defect exist or not if exist then take defect _id and other details and
 #          log them in excel sheet as well
+# Last Modified Date : 28 Dec,2020
 ########################################################################################################################
-
 import openpyxl
 import os
 import CheckDirectory
@@ -13,7 +13,7 @@ from openpyxl import Workbook
 from tkinter import messagebox
 from tkinter import *
 from tkinter import ttk
-import Utility_Launch
+import MCPI
 
 
 class defect_info(Toplevel):
@@ -27,7 +27,7 @@ class defect_info(Toplevel):
         self.frame_on_defect_info = Frame(self, height=120, bg="white")
         self.frame_on_defect_info.pack(fill="both")
         try:
-            self.frame_defect_info = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/package.png'))
+            self.frame_defect_info = PhotoImage(file=os.path.join(MCPI.path, 'Image_01/package.png'))
             self.label_photo = ttk.Label(self.frame_on_defect_info, image=self.frame_defect_info,
                                          background="white").place(x=30, y=30)
         except:
@@ -56,19 +56,20 @@ class defect_info(Toplevel):
         self.defect_scrn_entry.place(x=180, y=270)
 
         self.defect_info_done = ttk.Button(self, width=14, text='DONE'
-                                           , command=self.close_wndw)
-
+                                           , command=lambda: self.close_wndw(None))
+        self.defect_info_done.bind("<Return>", self.close_wndw)
         self.defect_info_done.place(x=180, y=320)
 
-    def close_wndw(self):
+    def close_wndw(self, event):
         d_id = self.defect_id_entry.get()
         d_des = self.defect_desc_entry.get()
         d_scrn = self.defect_scrn_entry.get()
         if d_id and d_des and d_scrn != ' ':
-            log_in_excel(os.getcwd(), d_id, d_des, d_scrn)
+            log_in_excel(os.getcwd(),'Fail',d_id, d_des, d_scrn)
             self.destroy()
         else:
             messagebox.showerror("Error!", "Please Fill all the mandatory fields", icon="error")
+            self.focus()
 
 
 # def create_fldr():
@@ -82,24 +83,23 @@ class defect_info(Toplevel):
 #         log_in_excel(old_dir,None,None,None)
 
 
-def log_in_excel(old_dir, defect_id, defect_desc, defect_sc):
+def log_in_excel(old_dir,status,defect_id, defect_desc, defect_sc):
     CheckDirectory.check_directory()
     list_of_fldr = os.listdir()
     if "My Reports" not in list_of_fldr:
         os.mkdir("My Reports")
+
+    # Pre defined values like App name,work-book name,Location,date,Test-case Name,Status
+    loc = old_dir
+    old_dir = old_dir.split("\\")
+    wb_name = old_dir[-3]
+    app_name = old_dir[-2]
+    tc_name = old_dir[-1]
+    date = datetime.date.today()
+    # If defect occurs or status is fail then this values gets filled from above class or through parameters
     d_id = defect_id
     d_sc = defect_desc
     d_des = defect_sc
-    loc = old_dir
-    old_dir = old_dir.split("\\")
-    wb_name = old_dir[-4]
-    app_name = old_dir[-3]
-    tc_name = old_dir[-2]
-    date = datetime.date.today()
-    if "Defect" in old_dir:
-        status = 'Fail'
-    else:
-        status = 'Pass'
     os.chdir(os.path.join(os.getcwd(), "My Reports"))
     # Check weather the file exist or not
     list_of_wb = list()
@@ -114,8 +114,10 @@ def log_in_excel(old_dir, defect_id, defect_desc, defect_sc):
         wb = Workbook()
         sheet = wb.active
         sheet.title = wb_name
-        data = [('App. Name', 'Test Case', 'Date', 'Status', 'Location', 'Defect Id', 'Short Desc.', 'Screen Name'),
-                (app_name, tc_name, date, status, loc, d_id, d_sc, d_des)
+        sr_no = sheet.max_row
+        data = [('Sr.no.', 'App. Name', 'Test Case', 'Date', 'Status', 'Location', 'Defect Id', 'Short Desc.'
+                 , 'Screen Name', 'Comment'),
+                (sr_no, app_name, tc_name, str(date), status, loc, d_id, d_sc, d_des)
                 ]
 
         for row in data:
@@ -126,7 +128,9 @@ def log_in_excel(old_dir, defect_id, defect_desc, defect_sc):
         try:
             wb = openpyxl.load_workbook(file_name)
             act_sheet = wb.active
-            act_sheet.append([app_name, tc_name, date, status, loc, d_id, d_sc, d_des])
+            sr_no = act_sheet.max_row
+            act_sheet.append([sr_no, app_name, tc_name, str(date), status, loc, d_id, d_sc, d_des])
             wb.save(file_name)
         except:
             messagebox.showerror("Error!", "Please close the {}.xlsx File".format(wb_name))
+

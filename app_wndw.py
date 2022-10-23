@@ -2,11 +2,12 @@
 # Author : Utkarsh Singh
 # Project : Daily Utility
 # Module : Window to Enter Application Name
+# Last Modified Date : 29 Dec,2020
 ###############################################################
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from Utility_Launch import path
+import MCPI
 import os
 import CreateSubFolder
 from CheckDirectory import check_directory
@@ -25,7 +26,7 @@ class app_window(Toplevel):
         self.top_frame = Frame(self, height=120, bg="white")
         self.top_frame.pack(fill="both")
         try:
-            self.image_on_app = PhotoImage(file=os.path.join(path,'Images/folder.png'))
+            self.image_on_app = PhotoImage(file=os.path.join(MCPI.path, 'Images/folder.png'))
             self.label_photo = ttk.Label(self.top_frame, image=self.image_on_app, background="white").place(x=50, y=30)
         except:
             pass
@@ -52,13 +53,11 @@ class app_window(Toplevel):
 
     def create_sub_folder(self,event):
         application_name = self.entry_name.get()
-        print(os.getcwd())
         if application_name != '':
             check_directory()
-            print(os.getcwd(),"Second")
             CreateSubFolder.create_sub_folder(application_name)
             self.close_wndw(None)
         else:
-            messagebox.showerror("Error!", "Please Enter Application name", icon="error")
+            messagebox.showerror("Error!", "Please Enter Application name")
             self.close_wndw(None)
             return app_window()

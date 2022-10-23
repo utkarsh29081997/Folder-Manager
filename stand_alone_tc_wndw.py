@@ -2,12 +2,13 @@
 # Author : Utkarsh Singh
 # Project : Daily Utility
 # Module : Window to create Test Case folder Called from main window and Continue flow for previous Flow
+# Last Modified Date : 13 Dec,2020
 ########################################################################################################
 import os
 from tkinter import *
 from tkinter import messagebox, simpledialog
 from tkinter import ttk
-import Utility_Launch
+import MCPI
 
 from CheckDirectory import check_directory
 from scrnshot_wndw import scrnshot
@@ -18,7 +19,7 @@ from testcase_wndw import name_of_testcase
 class tc_window(Toplevel):
     def __init__(self):
         Toplevel.__init__(self)
-        self.geometry("550x550+790+120")
+        self.geometry("550x450+790+120")
         self.title("One Stop Window")
         self.resizable(False, False)
 
@@ -26,7 +27,7 @@ class tc_window(Toplevel):
         self.frame_on_standalone = Frame(self, height=120, bg="white")
         self.frame_on_standalone.pack(fill="both")
         try:
-            self.top_framestand_alone = PhotoImage(file=os.path.join(Utility_Launch.path, 'Image_01/boy.png'))
+            self.top_framestand_alone = PhotoImage(file=os.path.join(MCPI.path, 'Image_01/boy.png'))
             self.label_photo = ttk.Label(self.frame_on_standalone, image=self.top_framestand_alone,
                                          background="white").place(x=30, y=30)
         except:
@@ -45,19 +46,25 @@ class tc_window(Toplevel):
             self.drp_dowlist_env['values'] = list_of_env
             self.drp_dowlist_env.place(x=50, y=130)
             self.drp_dowlist_env.set('Choose a File')
-            self.create_btn1 = ttk.Button(self, width=14, text='      OK      ', command=self.app_name_for_testcase)
+            self.create_btn1 = ttk.Button(self, width=14, text='      OK      ',
+                                          command=lambda:self.app_name_for_testcase(None))
+            self.create_btn1.bind("<Return>",self.app_name_for_testcase)
             self.create_btn1.place(x=50, y=184)
-            self.pick_last = ttk.Button(self, width=14, text='Pick Last Flow', command=self.call_lastpick)
+            self.quit_app = ttk.Button(self, width=15, text='    Close    ', command=lambda: self.close_wndw(None))
+            self.quit_app.bind("<Return>", self.close_wndw)
+            self.quit_app.place(x=178, y=184)
+            self.pick_last = ttk.Button(self, width=14, text='Pick Last Flow', command=lambda:self.call_lastpick(None))
+            self.pick_last.bind("<Return>",self.call_lastpick)
             self.pick_last.place(x=50, y=284)
-            self.quit_app = ttk.Button(self, width=15, text='    Close    ', command=self.close_wndw)
-            self.quit_app.place(x=175, y=184)
-        except:
+
+        except Exception as e:
+            messagebox.showerror("Wait!!", e)
             pass
 
-    def close_wndw(self):
+    def close_wndw(self,event):
         self.destroy()
 
-    # Get Env. name and check in folder weather it exists or not in order to fetch the List of Application list
+    # Get Env. name and check in folder wea there it exists or not in order to fetch the List of Application list
     def get_app_list_from_env(self):
         check_directory()
         response = messagebox.askquestion("!nfo", "Choose YES for a specific Environment and NO to move in General")
@@ -77,21 +84,22 @@ class tc_window(Toplevel):
                 os.chdir(os.path.join(os.getcwd(), "General"))
         except:
             simpledialog.messagebox.showinfo("Error!", 'No Folder available in Screenshot')
-            self.close_wndw()
+            self.close_wndw(None)
 
     # Get application folder from Environment list
-    def app_name_for_testcase(self):
+    def app_name_for_testcase(self,event):
         # Change the directory Since it will create the folder in Project File and we donn't need that so changing the
         # folder location to desktop screenshot
         if self.get_app_name.get() != "Choose a File":
             os.chdir(os.path.join(os.getcwd(), self.get_app_name.get()))
             name_of_testcase()
-            self.close_wndw()
+            self.close_wndw(None)
         else:
             messagebox.showerror("Error!", "Please Enter Application name", icon="error")
+            self.focus()
 
     # To recreate last flow
-    def call_lastpick(self):
+    def call_lastpick(self,event):
         # Take App name
         try:
             self.create_btn1['state'] = DISABLED
@@ -115,14 +123,19 @@ class tc_window(Toplevel):
             else:
                 messagebox.showerror("Error!", "Please Select Application")
                 self.create_btn1['state'] = NORMAL
+                self.pick_last['state'] = NORMAL
+                self.focus()
         except:
             messagebox.showerror("Error!", "Please Select Test Case")
+            self.focus()
 
     def call_scrnshot_for_lastpick(self, test_case_folder):
         if test_case_folder != "Choose a Test Case":
-            self.close_wndw()
+            self.close_wndw(None)
             test = test_case_folder
             os.chdir(os.path.join(os.getcwd(), test))
-            scrnshot()
+            imgfldrpath = os.path.join(os.getcwd(), 'Images')
+            scrnshot(imgfldrpath)
         else:
             messagebox.showerror("Error!", "Please Select Test Case")
+            self.focus()
